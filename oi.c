@@ -4,79 +4,25 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <unistd.h> // Para usleep() (substituto do Sleep) e STDIN_FILENO
-#include <termios.h> // Para _getch()
-#include <locale.h>  // Para lidar com acentuação corretamente
+#include <windows.h>
+#include <conio.h>
 
-#define ALTURA_ASCII 4
-#define LARGURA_MAX_ASCII 15
 
-// ===== FUNÇÕES ADAPTADAS PARA LINUX =====
-
-// Limpa a tela do terminal
-void limparTela() {
-    printf("\033[2J\033[H");
-    fflush(stdout);
-}
-
-// Move o cursor para a posição (x, y)
 void animacao(int x, int y) {
-    // No padrão ANSI, as coordenadas são (linha, coluna) e começam em 1.
-    // Adicionamos +1 para manter a lógica original do seu código que espera (0,0).
-    printf("\033[%d;%dH", y + 1, x + 1);
+    COORD coord;
+    coord.X = x;
+    coord.Y = y; 
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
 
-// Muda a cor do texto usando códigos ANSI
-void mudarCor(int cor) {
-    /* Tabela de conversão de cores Windows para ANSI */
-    const char* cores_ansi[] = {
-        "\033[0;30m", // 0: Preto
-        "\033[0;34m", // 1: Azul
-        "\033[0;32m", // 2: Verde
-        "\033[0;36m", // 3: Ciano
-        "\033[0;31m", // 4: Vermelho
-        "\033[0;35m", // 5: Magenta
-        "\033[0;33m", // 6: Amarelo/Marrom
-        "\033[0m",    // 7: Padrão (reseta a cor)
-        "\033[1;30m", // 8: Cinza escuro
-        "\033[1;34m", // 9: Azul claro
-        "\033[1;32m", // 10: Verde claro
-        "\033[1;36m", // 11: Ciano claro
-        "\033[1;31m", // 12: Vermelho claro
-        "\033[1;35m", // 13: Rosa/Magenta claro
-        "\033[1;33m", // 14: Amarelo
-        "\033[1;37m"  // 15: Branco
-    };
-    if (cor >= 0 && cor <= 15) {
-        printf("%s", cores_ansi[cor]);
-    } else {
-        printf("\033[0m"); // Reseta para o padrão
-    }
+void mudarCor(int cor){
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), cor);
+
 }
 
-// Função para pausar a execução (substitui Sleep)
-void Sleep(int milliseconds) {
-    usleep(milliseconds * 1000);
-}
-
-// Implementação da função _getch() para Linux
-int _getch() {
-    struct termios oldattr, newattr;
-    int ch;
-    tcgetattr(STDIN_FILENO, &oldattr);
-    newattr = oldattr;
-    newattr.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &newattr);
-    ch = getchar();
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldattr);
-    return ch;
-}
-
-// ===== SEU CÓDIGO (COM PEQUENOS AJUSTES) =====
-
-void print_animado(const char *texto, int delay_ms) {
-    int i;
-    for (i = 0; texto[i] != '\0'; i++) {
+void print_animado(const char *texto, int delay_ms){
+	int i;
+    for (i = 0; texto[i] != '\0'; i++){
         printf("%c", texto[i]);
         fflush(stdout);
         Sleep(delay_ms);
@@ -86,211 +32,436 @@ void print_animado(const char *texto, int delay_ms) {
 void print_animado_multilinha(const char *linhas[], int num_linhas, int delay_ms) {
     int max_len = 0;
     int i = 0, pos = 0, linha = 0;
-
+    
     for (i = 0; i < num_linhas; i++) {
         int len = (int)strlen(linhas[i]);
         if (len > max_len) max_len = len;
     }
 
-    limparTela();
+    system("cls");
     for (pos = 0; pos < max_len; pos++) {
         for (linha = 0; linha < num_linhas; linha++) {
             if (pos < (int)strlen(linhas[linha])) {
-                animacao(pos, linha);
+                animacao(pos, linha); 
                 putchar(linhas[linha][pos]);
             }
         }
         fflush(stdout);
         Sleep(delay_ms);
     }
+    
     animacao(0, num_linhas + 1);
 }
 
-void uern() {
-    const char *arte[] = {
-        " __    __  _______ .______      .__   __. ",
-        "|  |  |  | |   ____||   _  \\     |  \\ |  | ",
-        "|  |  |  | |  |__   |  |_)  |    |   \\|  | ",
-        "|  |  |  | |   __|  |      /     |  . `  | ",
-        "|  `--'  | |  |____ |  |\\  \\----.|  |\\   | ",
-        " \\______/  |_______|| _| `._____||__| \\__| ",
-    };
-    int num_linhas = sizeof(arte) / sizeof(arte[0]);
-    mudarCor(3);
-    print_animado_multilinha(arte, num_linhas, 10); // Aumentei um pouco o delay para melhor visualização
+
+
+
+void guerreiro() {
+	mudarCor(6);
+    printf("A           {}\n");
+    printf(" / \\, | ,        .--.\n");
+    printf("|    =|= >      /.--.\\\n");
+    printf(" \\ /` | `       |====|\n");
+    printf("  `   |         |`::`|  \n");
+    printf("      |     .-;`\\..../`;_.-^-._\n");
+    printf("     /\\\\/  /  |...::..|`   :   `|\n");
+    printf("     |:'\\ |   /'''::''|   .:.   |\n");
+    printf("      \\ /\\;-,/\\   :: |..:UERN:..|\n");
+    printf("      |\\ <` >  >._::_.| ':::::' |\n");
+    printf("      | `\"\"`  /   ^^  |   ':'   |\n");
+    printf("      |       |       \\    :    /\n");
+    printf("      |       |        \\   :   / \n");
+    printf("      |       |___/\\___|`-.:.-`\n");
+    printf("      |        \\_ || _/    `\n");
+    printf("      |        <_ >< _>\n");
+    printf("      |        |  ||  |\n");
+    printf("      |        |  ||  |\n");
+    printf("      |       _\\.:||:./_\n");
+    printf("      | RN  /____/\\____\\\n");
     mudarCor(7);
-    printf("\n");
+}
+
+void mago() {
+	mudarCor(6);
+    printf("              _,._      \n");
+    printf("  .||,       /_ _\\\\     \n");
+    printf(" \\.`',/      |'L'| |    \n");
+    printf(" = ,. =      | -,| L    \n");
+    printf(" / || \\    ,-'\\\"/,'`.   \n");
+    printf("   ||     ,'   `,,. `.  \n");
+    printf("   ,|____,' , ,;' \\| |  \n");
+    printf("  (3|\\    _/|/'   _| |  \n");
+    printf("   ||/,-''  | >-'' _,\\\\ \n");
+    printf("   ||'      ==\\ ,-'  ,' \n");
+    printf("   ||       |  V \\ ,|   \n");
+    printf("   ||       |    |` |   \n");
+    printf("   ||       |    |   \\  \n");
+    printf("   ||       |    \\    \\ \n");
+    printf("   ||       |     |    \\\n");
+    printf("   ||       |      \\_,-'\n");
+    printf("   ||       |___,,--\")_\\\\\n");
+    printf("   ||         |_|   ccc/\n");
+    printf("   ||        ccc/       \n");
+    printf("   ||             \n");
+    mudarCor(2);
+;
+}
+
+void arqueiro() {
+	mudarCor(6);
+    printf("            /`.                       \n");
+    printf("           /   :.                        _\n");
+    printf("          /     \\\\                      | |\n");
+    printf("       ,;/,      ::              >>>>---: |> \n");
+    printf("   ___:c/.(      ||                     | |\n");
+    printf(" ,'  _|:)>>>--,-'B)>                    | |\n");
+    printf("(  '---'\\--'` _,'||                     | |\n");
+    printf(" `--.    \\ ,-'   ;;                     | |\n");
+    printf("     |    \\|    //                  ,>-.| |\n");
+    printf("     |     \\   ;'                  ^    |_|\n");
+    printf("     |_____|'\\,'                          |\n");
+    printf("     :     :                             |\n");
+    printf("     |  ,  |                             |\n");
+    printf("     | : \\ :                             |\n");
+    printf("     | | : :                             |\n");
+    printf("     | | | |                            /|\\\n");
+    printf("     | | |_`.  jah/SSt                 / | \\\n");
+    printf("     '--`                             /  |  \\\n");
+    printf("                                         '\n");
+    mudarCor(2);
+}
+
+void suporte() {
+	mudarCor(6);
+    printf("             _,._\n");
+    printf("           ,'   ,`-.\n");
+    printf("|.        /     |\\  `.\n");
+    printf("\\ \\      (  ,-,-` ). `-._ __\n");
+    printf(" \\ \\      \\|\\,'     `\\  /'  `\\\n");
+    printf("  \\ \\      ` |, ,  /  \\ \\     \\\n");
+    printf("   \\ \\         `,_/`, /\\,`-.__/`.\n");
+    printf("    \\ \\            | ` /    /    `-._\n");
+    printf("     \\\\\\           `-/'    /         `-.\n");
+    printf("      \\\\`/ _______,-/_   /'             \\\n");
+    printf("     ---'`|       |`  ),' `---.  ,       |\n");
+    printf("      \\..-`--..___|_,/          /       /\n");
+    printf("                 |    |`,-,...,/      ,'     \n");
+    printf("                 \\    | |_|   /     ,' __  r-'',\n");
+    printf("                  |___|/  |, /  __ /-''  `'`)  |  \n");
+    printf("               _,-'   ||__\\ /,-' /     _,.--|  (\n");
+    printf("            .-'       )   `(_   / _,.-'  ,-' _,/\n");
+    printf("             `-------'       `--''       `'''\n");
+    mudarCor(2);
+}
+
+
+
+
+void apresentacaoGuerreiro() {
+	mudarCor(2);
+    printf("=====================================\n");
+    printf("|           FICHA DE RPG            |\n");
+    printf("=====================================\n");
+    printf("| 00 - CLASSE: GUERREIRO            |\n");
+    printf("| VIDA: 1500                        |\n");
+    printf("| ATAQUE F�SICO: 400                |\n");
+    printf("| DEFESA: 150                       |\n");
+    printf("=====================================\n");
+    mudarCor(7);
+}
+
+void apresentacaoMago() {
+	mudarCor(2);
+    printf("=====================================\n");
+    printf("|           FICHA DE RPG            |\n");
+    printf("=====================================\n");
+    printf("| 01 - CLASSE: MAGO                 |\n");
+    printf("| VIDA: 600                         |\n");
+    printf("| ATAQUE M�GICO: 600                |\n");
+    printf("| DEFESA: 250                       |\n");
+    printf("=====================================\n");
+    mudarCor(7);
+}
+
+void apresentacaoArqueiro() {
+	mudarCor(2);
+    printf("=====================================\n");
+    printf("|           FICHA DE RPG            |\n");
+    printf("=====================================\n");
+    printf("| 02 - CLASSE: ARQUEIRO             |\n");
+    printf("| VIDA: 900                         |\n");
+    printf("| ATAQUE M�GICO: 600                |\n");
+    printf("| DEFESA: 50                       |\n");
+    printf("=====================================\n");
+    mudarCor(7);
+}
+
+void apresentacaoSuporte() {
+	mudarCor(2);
+    printf("=====================================\n");
+    printf("|           FICHA DE RPG            |\n");
+    printf("=====================================\n");
+    printf("| 03 - CLASSE: SUPORTE              |\n");
+    printf("| VIDA: 550                         |\n");
+    printf("| ATAQUE M�GICO: 350                |\n");
+    printf("| DEFESA: 500                       |\n");
+    printf("=====================================\n");
+    mudarCor(7);
+}
+
+
+
+void loopClasses() {
+    int estado_atual = 0;
+    int classe1, classe2;
+    const int total_classes = 4; 
+
+    while (1) {
+        system("CLS"); 
+
+
+        switch (estado_atual) {
+            case 0:
+                guerreiro();
+                apresentacaoGuerreiro();
+                break;
+            case 1:
+                mago();
+                apresentacaoMago();
+                break;
+            case 2:
+                arqueiro(); 
+                apresentacaoArqueiro();
+                break;
+            case 3:
+                suporte();
+                apresentacaoSuporte();
+                break;
+        }
+
+        mudarCor(3);
+        printf("\n============================================================\n");
+        printf("(Use as setinhas ESQUERDA/DIREITA para navegar em loop.)\n");
+        printf("(Pressione 'Q' ou 'q' para SELECIONAR esta classe)\n");
+        printf("============================================================\n");
+        mudarCor(7);
+
+        classe1 = getch();
+
+        if (classe1 == 'q' || classe1 == 'Q') {
+            break; 
+        }
+
+        if (classe1 == 0 || classe1 == 0xE0) {
+            classe2 = getch();
+            switch (classe2) {
+                case 75:
+                case 72: 
+                    estado_atual = (estado_atual - 1 + total_classes) % total_classes;
+                    break;
+                case 77: 
+                case 80: 
+                    estado_atual = (estado_atual + 1) % total_classes;
+                    break;
+            }
+        }
+    }
+
+
+    system("CLS");
+    printf("==================================================\n");
+    printf("VOC� SELECIONOU A CLASSE (ID): %d\n", estado_atual);
+    
+
+    switch (estado_atual) {
+        case 0: 
+			printf("CLASSE: Guerreiro\n");
+			guerreiro();
+			break;
+        case 1: 
+			printf("CLASSE: Mago\n");
+			mago(); 
+			break;
+        case 2: 
+			printf("CLASSE: Arqueiro\n");
+			arqueiro(); 
+			break;
+        case 3: 
+			printf("CLASSE: Suporte\n"); 
+			suporte();
+			break;
+    }
+    printf("************************************************************\n");
+}
+
+
+
+void uern() {
+	const char *arte[] = {
+	    " __    __   _______ .______      .__    __. ", 
+	    "|  |  |  | |   ____||   _  \\     |  \\ |  | ",
+	    "|  |  |  | |  |__   |  |_)  |    |   \\|  | ",
+	    "|  |  |  | |   __|  |      /     |  . `  | ",
+	    "|  `--'  | |  |____ |  |\\  \\----.|  |\\   | ", 
+	    " \\______/  |_______|| _| `._____||__| \\__| ",
+	};
+
+    int num_linhas = sizeof(arte) / sizeof(arte[0]);
+    
+    mudarCor(3);
+    print_animado_multilinha(arte, num_linhas, 30);
+    mudarCor(7);
+    printf("\n"); 
 }
 
 void projetoRpg() {
     const char *arte[] = {
-        "  ____               _      _          ____  ____   ____ ",
+        "  ____            _      _          ____  ____   ____ ",
         " |  _ \\ _ __ ___ (_) ___| |_ ___   |  _ \\|  _ \\ / ___|",
         " | |_) | '__/ _ \\| |/ _ \\ __/ _ \\  | |_) | |_) | |  _ ",
         " |  __/| | | (_) | |  __/ || (_) | |  _ <|  __/| |_| |",
         " |_|   |_|  \\___// |\\___|\\__\\___/  |_| \\_\\_|    \\____|",
-        "               |__/                                  "
+        "               |__/                                    "
     };
+
     int num_linhas = sizeof(arte) / sizeof(arte[0]);
+
     mudarCor(12);
-    print_animado_multilinha(arte, num_linhas, 10);
+    print_animado_multilinha(arte, num_linhas, 30);
     mudarCor(7);
     printf("\n");
 }
 
-void introducao() {
-    // Textos corrigidos para UTF-8
-    const char *introRPG[] = {
-        "==============================================================",
-        "                  Bem-vindo ao bravo mundo de RPG!            ",
-        "==============================================================",
-        "",
-        "Após longas jornadas e perigos desconhecidos, você finalmente",
-        "chega ao ponto crucial da sua aventura. Agora, a hora chegou:",
-        "É o momento de decidir seu destino, seu caminho, sua identidade!",
-        "",
-        "Herói ou heroína, guerreiro(a) ou sábio(a), o mundo espera pelo",
-        "nome que carregará na glória das batalhas e nas lendas que surgirão.",
-        ""
-    };
+void introducao(){
+	const char *introRPG[] = {
+	    "==============================================================",
+	    "                 Bem-vindo ao bravo mundo de RPG!            ",
+	    "==============================================================",
+	    "",
+	    "Ap�s longas jornadas e perigos desconhecidos, voc� finalmente",
+	    "chega ao ponto crucial da sua aventura. Agora, a hora chegou:",
+	    "� o momento de decidir seu destino, seu caminho, sua identidade!",
+	    "",
+	    "Her�i ou hero�na, guerreiro(a) ou s�bio(a), o mundo espera pelo",
+	    "nome que carregar� na gl�ria das batalhas e nas lendas que surgir�o.",
+	    ""
+	};
+    
     int num_linhas = sizeof(introRPG) / sizeof(introRPG[0]);
+    
     mudarCor(14);
-    int i;
-    for (i = 0; i < num_linhas; i++) {
-        print_animado(introRPG[i], 1);
-        printf("\n");
-        Sleep(80);
-    }
-    mudarCor(7);
-    printf("\n");
+	int i;
+	
+	for(i = 0; i < num_linhas; i++){
+		print_animado(introRPG[i], 1);
+		printf("\n");
+		Sleep(80);
+	}
+	
+	mudarCor(7);
+	printf("\n");
+
 }
 
-void apresentacaoMago() {
-    const char *introRPG[] = {
-        "01- CLASSE: MAGO",
-        "VIDA = 50",
-        "ATAQUE MÁGICO = 350",
-        "DEFESA = 100"
-    };
-    int num_linhas = sizeof(introRPG) / sizeof(introRPG[0]);
-    mudarCor(10); // Verde claro
-    int i;
-    for (i = 0; i < num_linhas; i++) {
-        print_animado(introRPG[i], 2);
-        printf("\n");
-        Sleep(80);
-    }
-    mudarCor(7);
-    printf("\n");
+void contagem(){
+	int contador = 1;
+	
+	for (contador = 5; contador >= 1; contador--){
+		mudarCor(contador + 1);
+		print_animado("Mudando para a tela de sele��o de agente em: ", 1);
+		printf("%d", contador);
+		print_animado(" segundos\n", contador);
+		Sleep(500);
+	}
 }
 
-void mago() {
-    const char *desenho[] = {
-        "              _,._      ",
-        "  .||,      /_ _\\\\     ",
-        " \\.`',/      |'L'| |    ",
-        " = ,. =      | -,| L    ",
-        " / || \\    ,-'\\\"/,'`.  ",
-        "   ||     ,'   `.,. `. ",
-        "  ,|____,' , ,;' \\| | ",
-        " (3|\\    _/|/'   _| | ",
-        "  ||/,-''  | >-'' _,\\\\",
-        "  ||'      ==\\ ,-'  ,' ",
-        "  ||       |  V \\ ,|  ",
-        "  ||       |   |` |  ",
-        "  ||       |   |   \\  ",
-        "  ||       |   \\    \\ ",
-        "  ||       |   |    \\",
-        "  ||       |    \\_,-'",
-        "  ||       |___,,--\")_\\",
-        "  ||         |_|   ccc/",
-        "  ||         ccc/      ",
-        "  ||               hjm"
-    };
-    int num_linhas = sizeof(desenho) / sizeof(desenho[0]);
-    mudarCor(6);
-    print_animado_multilinha(desenho, num_linhas, 10);
-    mudarCor(7);
-}
 
 struct usuario {
-    char nick[50];
-    int ataque;
-    int defesa;
-    int vida;
+	char nick[50];
+	int ataque;
+	int defesa;
+	int vida;
 };
 
 struct monstros {
-    char nomesDosmonstros[50];
-    int ataqueMonstros;
-    int defesaMonstros;
-    int vidaMonstros;
+	char nomesDosmonstros[50];
+	int ataqueMonstros;
+	int defesaMonstros;
+	int vidaMonstros;
 };
 
+
+
 int main() {
-    // Configura o programa para usar a localização do sistema (para acentos)
-    setlocale(LC_ALL, "");
-
-    char nick_maiusculo[100];
-    struct usuario jogador;
-    struct monstros tiposMonstros[6];
-    bool nomeValido = false;
-
-    printf("Versão 1.0.1 (Adaptado para Linux)\n");
-    Sleep(1000);
-    limparTela();
-    
-    uern();
-    Sleep(500);
-    projetoRpg();
-    Sleep(500);
-    
-    introducao();
-    
-    while (!nomeValido) {
-        mudarCor(9);
-        printf("Qual é o seu nick de batalha: ");
-        mudarCor(7); // Reseta a cor para o input do usuário
-        fgets(jogador.nick, sizeof(jogador.nick), stdin);
-        jogador.nick[strcspn(jogador.nick, "\n\r")] = '\0';
-
-        if (strchr(jogador.nick, ' ') != NULL) {
-            mudarCor(4);
-            printf("ERRO: O nick não pode conter espaços. Tente novamente.\n\n");
+	SetConsoleOutputCP(1252);
+	
+	struct usuario jogador;
+	struct monstros tiposMonstros[6];
+	char nick_maiusculo[100];
+	bool nomeValido = false;
+	
+	printf("Vers�o 1.2.5");
+	Sleep(1000);
+	system("CLS");
+	
+	
+	uern();
+	Sleep(500);
+	projetoRpg();
+	Sleep(500);
+	introducao();
+	
+	while(!nomeValido){
+		mudarCor(2);
+		printf("Qual � o seu nick de batalha:	");
+		fgets(jogador.nick, sizeof(jogador.nick), stdin);
+		jogador.nick[strcspn(jogador.nick, "\n\r")] = '\0';
+		
+		int i;
+		strcpy(nick_maiusculo, jogador.nick);
+		for (i = 0; nick_maiusculo[i] != '\0'; i++) {
+        	nick_maiusculo[i] = toupper(nick_maiusculo[i]);
+    	}
+		
+		if (strchr(jogador.nick, ' ') != NULL) {
+			mudarCor(4);
+            printf("ERRO: O nick nao pode conter espacos. Tente novamente.\n\n");   
         } else if (strlen(jogador.nick) == 0) {
-            mudarCor(4);
-            printf("ERRO: O nick não pode estar vazio. Tente novamente.\n\n");
+        	mudarCor(4);
+            printf("ERRO: O nick nao pode estar vazio. Tente novamente.\n\n");
         } else {
+        	mudarCor(2);
             nomeValido = true;
+            mudarCor(7);
         }
-    }
+	}
+	
+	system("CLS");
+	
+	mudarCor(2);
+	print_animado("Bem vindo jogador: ", 1);
+	mudarCor(3);
+	printf("%s\n\n", nick_maiusculo);
+	Sleep(500);
+	
+	
+	contagem();
+	
+	mudarCor(2);
+	
+	print_animado("\nPressione qualquer tecla para ir para a sele��o de agente:", 1);
+	_getch();
+	
+	
+    loopClasses();
 
-    // Converte para maiúsculo
-    for (int i = 0; jogador.nick[i] != '\0'; i++) {
-        nick_maiusculo[i] = toupper(jogador.nick[i]);
-        nick_maiusculo[i+1] = '\0';
-    }
-
-    limparTela();
-
-    mudarCor(6);
-    print_animado("Bem-vindo, jogador: ", 1);
-    printf("%s\n", nick_maiusculo);
-    Sleep(1000);
-
-    mudarCor(10);
-    print_animado("\nPressione qualquer tecla para ir para a seleção de agente...", 1);
-    _getch();
-    limparTela();
-    
-    mago();
-    apresentacaoMago();
-
-    printf("\nFim da demonstração. Pressione qualquer tecla para sair.\n");
-	printf("oi");
-    _getch();
-	limparTela(); 
-    
-    mudarCor(7); // Garante que o terminal volte ao normal
+    printf("\nPrograma finalizado. Pressione qualquer tecla para fechar.\n");
+    getch();
     return 0;
 }
+
+
+
+
+
+
